@@ -65,6 +65,7 @@ dependencies {
     // Core
     implementation(libs.core.ktx)
     implementation(libs.core.splashscreen)
+    implementation(libs.google.material)
     implementation(libs.lifecycle.runtime.ktx)
     implementation(libs.lifecycle.viewmodel.compose)
 
