@@ -91,7 +91,7 @@ fun WallpaperScreen(
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Icon(
-                                Icons.Default.Wallpaper,
+                                Icons.Default.Home,
                                 contentDescription = null,
                                 tint = DayGridTextTertiary,
                                 modifier = Modifier.size(48.dp)

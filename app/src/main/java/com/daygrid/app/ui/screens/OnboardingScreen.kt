@@ -29,12 +29,12 @@ fun OnboardingScreen(
 ) {
     val pages = listOf(
         OnboardingPage(
-            icon = Icons.Default.CalendarViewMonth,
+            icon = Icons.Default.DateRange,
             title = "See your year",
             subtitle = "Every day of the year, visible at a glance. One tiny dot — one day of your life."
         ),
         OnboardingPage(
-            icon = Icons.Default.LightMode,
+            icon = Icons.Default.Star,
             title = "Reflect on your day",
             subtitle = "Each evening, take 10 seconds to mark whether you made today count. That's it."
         ),

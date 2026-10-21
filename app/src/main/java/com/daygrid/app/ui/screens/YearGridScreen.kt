@@ -122,10 +122,10 @@ private fun DayGridTopBar(
         },
         actions = {
             IconButton(onClick = onNavigateStats, modifier = Modifier.semantics { contentDescription = "Statistics" }) {
-                Icon(Icons.Default.BarChart, contentDescription = null, tint = DayGridTextSecondary)
+                Icon(Icons.Default.Info, contentDescription = null, tint = DayGridTextSecondary)
             }
             IconButton(onClick = onNavigateWallpaper, modifier = Modifier.semantics { contentDescription = "Wallpaper" }) {
-                Icon(Icons.Default.Wallpaper, contentDescription = null, tint = DayGridTextSecondary)
+                Icon(Icons.Default.Home, contentDescription = null, tint = DayGridTextSecondary)
             }
             IconButton(onClick = onNavigateSettings, modifier = Modifier.semantics { contentDescription = "Settings" }) {
                 Icon(Icons.Default.Settings, contentDescription = null, tint = DayGridTextSecondary)

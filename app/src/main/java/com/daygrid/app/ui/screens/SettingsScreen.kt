@@ -1,5 +1,8 @@
 package com.daygrid.app.ui.screens
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -105,14 +108,14 @@ fun SettingsScreen(
             SettingsClickRow(
                 title = "Export data",
                 subtitle = "Save all records as JSON",
-                icon = Icons.Default.Upload,
+                icon = Icons.Default.Share,
                 onClick = onExport
             )
 
             SettingsClickRow(
                 title = "Import data",
                 subtitle = "Load records from JSON file",
-                icon = Icons.Default.Download,
+                icon = Icons.Default.Add,
                 onClick = onImport
             )
 
@@ -262,7 +265,7 @@ private fun SettingsClickRow(
             if (value != null) {
                 Text(value, color = DayGridOrange, fontWeight = FontWeight.SemiBold)
             } else {
-                Icon(Icons.Default.ChevronRight, contentDescription = null, tint = DayGridTextTertiary)
+                Icon(Icons.Default.ArrowForward, contentDescription = null, tint = DayGridTextTertiary)
             }
         }
     }

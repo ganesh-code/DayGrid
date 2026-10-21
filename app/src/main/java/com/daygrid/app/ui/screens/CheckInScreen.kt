@@ -116,7 +116,7 @@ fun CheckInScreen(
             CheckInOption(
                 title = "Today was for rest",
                 subtitle = "Rest is part of a sustainable life",
-                icon = Icons.Default.SelfImprovement,
+                icon = Icons.Default.Favorite,
                 isSelected = selectedStatus == DayStatus.NEUTRAL,
                 selectedColor = DayGridNeutralCell,
                 onClick = { onSelectStatus(DayStatus.NEUTRAL) },
@@ -128,7 +128,7 @@ fun CheckInScreen(
             CheckInOption(
                 title = "Not today",
                 subtitle = "One day doesn't define your year",
-                icon = Icons.Default.Remove,
+                icon = Icons.Default.Close,
                 isSelected = selectedStatus == DayStatus.UNPRODUCTIVE,
                 selectedColor = DayGridTextSecondary,
                 onClick = { onSelectStatus(DayStatus.UNPRODUCTIVE) },
