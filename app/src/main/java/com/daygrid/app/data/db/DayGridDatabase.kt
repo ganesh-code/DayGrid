@@ -8,7 +8,7 @@ import com.daygrid.app.data.db.entity.DayRecordEntity
 @Database(
     entities = [DayRecordEntity::class],
     version = 1,
-    exportSchema = true
+    exportSchema = false
 )
 abstract class DayGridDatabase : RoomDatabase() {
     abstract fun dayRecordDao(): DayRecordDao
