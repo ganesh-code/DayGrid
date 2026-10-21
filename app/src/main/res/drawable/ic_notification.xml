@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Notification icon: a small grid of dots symbolising the year grid -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Row 1 -->
+    <path android:fillColor="#FFFFFF" android:pathData="M3,3 a1,1 0 1,0 2,0 a1,1 0 1,0 -2,0"/>
+    <path android:fillColor="#FFFFFF" android:pathData="M7,3 a1,1 0 1,0 2,0 a1,1 0 1,0 -2,0"/>
+    <path android:fillColor="#FFFFFF" android:pathData="M11,3 a1,1 0 1,0 2,0 a1,1 0 1,0 -2,0"/>
+    <path android:fillColor="#FFFFFF" android:pathData="M15,3 a1,1 0 1,0 2,0 a1,1 0 1,0 -2,0"/>
+    <path android:fillColor="#FFFFFF" android:pathData="M19,3 a1,1 0 1,0 2,0 a1,1 0 1,0 -2,0"/>
+    <!-- Row 2 -->
+    <path android:fillColor="#FFFFFF" android:pathData="M3,8 a1,1 0 1,0 2,0 a1,1 0 1,0 -2,0"/>
+    <path android:fillColor="#FF8A00" android:pathData="M7,8 a1,1 0 1,0 2,0 a1,1 0 1,0 -2,0"/>
+    <path android:fillColor="#FF8A00" android:pathData="M11,8 a1,1 0 1,0 2,0 a1,1 0 1,0 -2,0"/>
+    <path android:fillColor="#FFFFFF" android:pathData="M15,8 a1,1 0 1,0 2,0 a1,1 0 1,0 -2,0"/>
+    <path android:fillColor="#FF8A00" android:pathData="M19,8 a1,1 0 1,0 2,0 a1,1 0 1,0 -2,0"/>
+    <!-- Row 3 -->
+    <path android:fillColor="#FFFFFF" android:pathData="M3,13 a1,1 0 1,0 2,0 a1,1 0 1,0 -2,0"/>
+    <path android:fillColor="#FFFFFF" android:pathData="M7,13 a1,1 0 1,0 2,0 a1,1 0 1,0 -2,0"/>
+    <path android:fillColor="#FF8A00" android:pathData="M11,13 a1,1 0 1,0 2,0 a1,1 0 1,0 -2,0"/>
+    <path android:fillColor="#FFFFFF" android:pathData="M15,13 a1,1 0 1,0 2,0 a1,1 0 1,0 -2,0"/>
+    <path android:fillColor="#FFFFFF" android:pathData="M19,13 a1,1 0 1,0 2,0 a1,1 0 1,0 -2,0"/>
+    <!-- Row 4 -->
+    <path android:fillColor="#FF8A00" android:pathData="M3,18 a1,1 0 1,0 2,0 a1,1 0 1,0 -2,0"/>
+    <path android:fillColor="#FFFFFF" android:pathData="M7,18 a1,1 0 1,0 2,0 a1,1 0 1,0 -2,0"/>
+    <path android:fillColor="#FFFFFF" android:pathData="M11,18 a1,1 0 1,0 2,0 a1,1 0 1,0 -2,0"/>
+    <path android:fillColor="#FF8A00" android:pathData="M15,18 a1,1 0 1,0 2,0 a1,1 0 1,0 -2,0"/>
+    <path android:fillColor="#FFFFFF" android:pathData="M19,18 a1,1 0 1,0 2,0 a1,1 0 1,0 -2,0"/>
+</vector>

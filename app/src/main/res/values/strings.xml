@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">DayGrid</string>
+    <string name="widget_compact_label">DayGrid (Compact)</string>
+    <string name="widget_expanded_label">DayGrid (Expanded)</string>
+    <string name="notification_channel_name">Daily Reminder</string>
+    <string name="notification_channel_desc">Evening check-in reminder</string>
+</resources>
