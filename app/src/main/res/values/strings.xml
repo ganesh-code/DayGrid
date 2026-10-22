@@ -4,4 +4,7 @@
     <string name="widget_expanded_label">DayGrid (Expanded)</string>
     <string name="notification_channel_name">Daily Reminder</string>
     <string name="notification_channel_desc">Evening check-in reminder</string>
+    <string name="widget_nothing_lockscreen_label">DayGrid Screen Time (Nothing)</string>
+    <string name="wallpaper_service_label">DayGrid Live Wallpaper</string>
+    <string name="live_wallpaper_description">Dynamic Nothing-style DayGrid Live Wallpaper with clock, date and 365-day grid</string>
 </resources>

@@ -83,6 +83,33 @@
                 android:resource="@xml/widget_expanded_info" />
         </receiver>
 
+        <!-- Nothing OS / CMF Lock Screen Widget -->
+        <receiver
+            android:name=".widget.NothingScreenTimeWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_nothing_lockscreen_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_nothing_lockscreen_info" />
+        </receiver>
+
+        <!-- Dynamic Live Wallpaper Service -->
+        <service
+            android:name=".wallpaper.DayGridLiveWallpaperService"
+            android:label="@string/wallpaper_service_label"
+            android:permission="android.permission.BIND_WALLPAPER"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.service.wallpaper.WallpaperService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.service.wallpaper"
+                android:resource="@xml/daygrid_live_wallpaper" />
+        </service>
+
     </application>
 
 </manifest>

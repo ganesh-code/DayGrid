@@ -32,6 +32,12 @@ class WidgetRefreshManager @Inject constructor(
             expandedIds.forEach { id ->
                 DayGridExpandedWidget().update(context, id)
             }
+
+            // Refresh Nothing lock screen widgets
+            val nothingIds = compactManager.getGlanceIds(NothingScreenTimeWidget::class.java)
+            nothingIds.forEach { id ->
+                NothingScreenTimeWidget().update(context, id)
+            }
         } catch (e: Exception) {
             // Widget refresh failure should never crash the main app flow
             e.printStackTrace()

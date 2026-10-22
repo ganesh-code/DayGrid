@@ -16,6 +16,8 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 class UserPreferencesDataStore @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
+    private val fastPrefs = context.getSharedPreferences("daygrid_fast_prefs", Context.MODE_PRIVATE)
+
     companion object {
         val KEY_ONBOARDING_DONE = booleanPreferencesKey("onboarding_done")
         val KEY_REMINDER_ENABLED = booleanPreferencesKey("reminder_enabled")
@@ -26,9 +28,12 @@ class UserPreferencesDataStore @Inject constructor(
         val KEY_NOTIFICATION_PERMISSION_ASKED = booleanPreferencesKey("notification_permission_asked")
     }
 
+    fun isOnboardingDoneSync(): Boolean = fastPrefs.getBoolean("onboarding_done", false)
+
     val preferences: Flow<UserPreferences> = context.dataStore.data.map { prefs ->
+        val done = prefs[KEY_ONBOARDING_DONE] ?: fastPrefs.getBoolean("onboarding_done", false)
         UserPreferences(
-            onboardingDone = prefs[KEY_ONBOARDING_DONE] ?: false,
+            onboardingDone = done,
             reminderEnabled = prefs[KEY_REMINDER_ENABLED] ?: true,
             reminderHour = prefs[KEY_REMINDER_HOUR] ?: 20, // 8 PM default
             reminderMinute = prefs[KEY_REMINDER_MINUTE] ?: 30,
@@ -39,6 +44,7 @@ class UserPreferencesDataStore @Inject constructor(
     }
 
     suspend fun setOnboardingDone(done: Boolean) {
+        fastPrefs.edit().putBoolean("onboarding_done", done).commit()
         context.dataStore.edit { it[KEY_ONBOARDING_DONE] = done }
     }
 

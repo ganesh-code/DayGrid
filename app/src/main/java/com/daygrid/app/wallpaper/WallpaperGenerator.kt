@@ -51,19 +51,32 @@ class WallpaperGenerator @Inject constructor(
         val gridAreaRight = (width * 0.95f).toInt()
         val gridAreaWidth = gridAreaRight - gridAreaLeft
 
-        // --- Header text (Year) ---
+        val today = LocalDate.now()
+        val now = java.time.LocalTime.now()
+
+        // --- Clock Time (Nothing OS / CMF Aesthetic) ---
         paint.textAlign = Paint.Align.LEFT
         paint.color = Color.parseColor("#F5F5F5")
-        paint.textSize = (width * 0.10f)
+        paint.textSize = (width * 0.15f)
         paint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD)
-        canvas.drawText(stats.year.toString(), gridAreaLeft.toFloat(), (topSafeZone - width * 0.04f), paint)
+        val timeStr = now.format(DateTimeFormatter.ofPattern("HH:mm"))
+        canvas.drawText(timeStr, gridAreaLeft.toFloat(), (topSafeZone - width * 0.14f), paint)
 
-        // --- Stats text ---
-        paint.textSize = (width * 0.038f)
+        // --- Date (e.g. THU, 22 OCT 2026) ---
+        val dayName = today.dayOfWeek.getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.getDefault()).uppercase()
+        val monthName = today.month.getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.getDefault()).uppercase()
+        val dateText = "$dayName, ${today.dayOfMonth} $monthName ${stats.year}"
+        paint.textSize = (width * 0.040f)
         paint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL)
+        paint.color = accentColor
+        canvas.drawText(dateText, gridAreaLeft.toFloat(), (topSafeZone - width * 0.08f), paint)
+
+        // --- Stats & Day Count ---
+        paint.textSize = (width * 0.034f)
         paint.color = Color.parseColor("#A7A7A7")
-        val statsText = "${stats.productiveDays} productive  ·  ${stats.formattedPercentage}"
-        canvas.drawText(statsText, gridAreaLeft.toFloat(), (topSafeZone - width * 0.01f), paint)
+        val totalDays = if (today.isLeapYear) 366 else 365
+        val statsText = "DAY ${today.dayOfYear} OF $totalDays  ·  ${stats.productiveDays} PROD (${stats.formattedPercentage})"
+        canvas.drawText(statsText, gridAreaLeft.toFloat(), (topSafeZone - width * 0.02f), paint)
 
         // --- Grid layout ---
         val columns = 25
@@ -80,8 +93,6 @@ class WallpaperGenerator @Inject constructor(
         val totalGridHeight = rows * cellSize
         val gridLeft = gridAreaLeft + (gridAreaWidth - totalGridWidth) / 2f
         val gridTop = gridAreaTop + (gridAreaHeight - totalGridHeight) / 2f
-
-        val today = LocalDate.now()
 
         cells.forEachIndexed { index, cell ->
             val col = index % columns

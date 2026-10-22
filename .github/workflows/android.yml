@@ -51,12 +51,18 @@ jobs:
       if: github.ref == 'refs/heads/main'
       uses: softprops/action-gh-release@v2
       with:
-        tag_name: v1.0.0
-        name: "DayGrid v1.0.0 APK"
+        tag_name: v1.0.1
+        name: "DayGrid v1.0.1 APK"
+        make_latest: true
         body: |
-          ### 📱 DayGrid Mobile Download
+          ### 📱 DayGrid Mobile Download (v1.0.1)
           Download `DayGrid-debug.apk` directly to your phone.
-          - Minimum Android version: Android 13 (API 33)
+          - Bottom navigation bar (Grid, Stats, Wallpaper, Settings)
+          - Onboarding persists after first completion
+          - Today's date displayed on Home screen
+          - Dynamic Live Wallpaper service with real-time clock & date
+          - Reliable widget rendering with Canvas bitmap
+          - Nothing OS / CMF lock screen Screen Time widget
           - Optimized for CMF Phone 2 Pro & Nothing OS
         files: |
           app/build/outputs/apk/debug/app-debug.apk

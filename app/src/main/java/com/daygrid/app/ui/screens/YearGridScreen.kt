@@ -113,29 +113,50 @@ private fun DayGridTopBar(
             titleContentColor = DayGridTextPrimary
         ),
         title = {
-            Text(
-                text = "DayGrid",
-                fontWeight = FontWeight.Bold,
-                fontSize = 22.sp,
-                color = DayGridTextPrimary
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "DayGrid",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 22.sp,
+                    color = DayGridTextPrimary
+                )
+            }
         },
         actions = {
-            IconButton(onClick = onNavigateStats, modifier = Modifier.semantics { contentDescription = "Statistics" }) {
-                Icon(Icons.Default.Info, contentDescription = null, tint = DayGridTextSecondary)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(DayGridSurface)
+                    .padding(horizontal = 4.dp, vertical = 2.dp)
+            ) {
+                IconButton(onClick = onPreviousYear, modifier = Modifier.size(32.dp)) {
+                    Icon(Icons.Default.ChevronLeft, contentDescription = "Previous Year", tint = DayGridTextPrimary, modifier = Modifier.size(20.dp))
+                }
+                Text(
+                    text = year.toString(),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp,
+                    color = DayGridTextPrimary,
+                    modifier = Modifier.padding(horizontal = 4.dp)
+                )
+                IconButton(onClick = onNextYear, modifier = Modifier.size(32.dp)) {
+                    Icon(Icons.Default.ChevronRight, contentDescription = "Next Year", tint = DayGridTextPrimary, modifier = Modifier.size(20.dp))
+                }
             }
-            IconButton(onClick = onNavigateWallpaper, modifier = Modifier.semantics { contentDescription = "Wallpaper" }) {
-                Icon(Icons.Default.Home, contentDescription = null, tint = DayGridTextSecondary)
-            }
-            IconButton(onClick = onNavigateSettings, modifier = Modifier.semantics { contentDescription = "Settings" }) {
-                Icon(Icons.Default.Settings, contentDescription = null, tint = DayGridTextSecondary)
-            }
+            Spacer(Modifier.width(12.dp))
         }
     )
 }
 
 @Composable
 private fun StatsRow(stats: YearStats, accentColor: Color) {
+    val today = remember { java.time.LocalDate.now() }
+    val isCurrentYear = stats.year == today.year
+    val dayOfWeekName = today.dayOfWeek.getDisplayName(java.time.format.TextStyle.FULL, java.util.Locale.getDefault()).uppercase()
+    val monthName = today.month.getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.getDefault()).uppercase()
+    val totalDays = if (today.isLeapYear) 366 else 365
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -143,14 +164,40 @@ private fun StatsRow(stats: YearStats, accentColor: Color) {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Year
+        // Today's Date & Year
         Column {
-            Text(
-                text = stats.year.toString(),
-                fontWeight = FontWeight.Bold,
-                fontSize = 32.sp,
-                color = DayGridTextPrimary
-            )
+            if (isCurrentYear) {
+                Text(
+                    text = "$dayOfWeekName, ${today.dayOfMonth} $monthName",
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 12.sp,
+                    letterSpacing = 1.sp,
+                    color = accentColor
+                )
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = stats.year.toString(),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 28.sp,
+                    color = DayGridTextPrimary
+                )
+                if (isCurrentYear) {
+                    Spacer(Modifier.width(8.dp))
+                    Surface(
+                        color = DayGridSurface,
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            text = "DAY ${today.dayOfYear} OF $totalDays",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = DayGridTextSecondary,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
+                        )
+                    }
+                }
+            }
         }
 
         // Stats chips

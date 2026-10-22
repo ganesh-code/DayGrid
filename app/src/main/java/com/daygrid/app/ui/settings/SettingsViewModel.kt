@@ -31,7 +31,7 @@ class SettingsViewModel @Inject constructor(
 
     val preferences: StateFlow<UserPreferences> = prefsDataStore.preferences
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), UserPreferences(
-            onboardingDone = false,
+            onboardingDone = prefsDataStore.isOnboardingDoneSync(),
             reminderEnabled = true,
             reminderHour = 20,
             reminderMinute = 30,
@@ -42,6 +42,12 @@ class SettingsViewModel @Inject constructor(
 
     private val _events = MutableSharedFlow<SettingsEvent>()
     val events: SharedFlow<SettingsEvent> = _events.asSharedFlow()
+
+    fun setOnboardingDone(done: Boolean = true) {
+        viewModelScope.launch {
+            prefsDataStore.setOnboardingDone(done)
+        }
+    }
 
     fun setReminderEnabled(enabled: Boolean) {
         viewModelScope.launch {
