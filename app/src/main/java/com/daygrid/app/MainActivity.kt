@@ -49,7 +49,6 @@ import com.daygrid.app.ui.settings.SettingsViewModel
 import com.daygrid.app.ui.theme.DayGridBackground
 import com.daygrid.app.ui.theme.DayGridTextPrimary
 import com.daygrid.app.ui.theme.DayGridTheme
-import com.daygrid.app.ui.wallpaper.WallpaperEvent
 import com.daygrid.app.ui.wallpaper.WallpaperViewModel
 import com.daygrid.app.wallpaper.DayGridLiveWallpaperService
 import dagger.hilt.android.AndroidEntryPoint
@@ -179,7 +178,6 @@ fun DayGridApp(
     val prefs by settingsViewModel.preferences.collectAsStateWithLifecycle()
     val gridState by gridViewModel.uiState.collectAsStateWithLifecycle()
     val checkInState by checkInViewModel.uiState.collectAsStateWithLifecycle()
-    val wallpaperState by wallpaperViewModel.uiState.collectAsStateWithLifecycle()
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
@@ -226,25 +224,6 @@ fun DayGridApp(
                     Toast.makeText(
                         navController.context, event.message, Toast.LENGTH_LONG
                     ).show()
-            }
-        }
-    }
-
-    // Handle wallpaper events
-    LaunchedEffect(Unit) {
-        wallpaperViewModel.events.collect { event ->
-            when (event) {
-                is WallpaperEvent.ApplySuccess ->
-                    Toast.makeText(
-                        navController.context,
-                        "Wallpaper applied to ${event.target}",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                is WallpaperEvent.Error ->
-                    Toast.makeText(
-                        navController.context, event.message, Toast.LENGTH_LONG
-                    ).show()
-                else -> {}
             }
         }
     }
@@ -475,14 +454,8 @@ fun DayGridApp(
 
             composable(Screen.Wallpaper.route) {
                 WallpaperScreen(
-                    previewBitmap = wallpaperState.previewBitmap,
-                    isGenerating = wallpaperState.isGenerating,
-                    isApplying = wallpaperState.isApplying,
+                    cells = gridState.cells,
                     accentColor = accentColor,
-                    onGenerate = { wallpaperViewModel.generateWallpaper(gridState.year, prefs.accentColor) },
-                    onApplyLock = { wallpaperViewModel.applyWallpaper(WallpaperManager.FLAG_LOCK) },
-                    onApplyHome = { wallpaperViewModel.applyWallpaper(WallpaperManager.FLAG_SYSTEM) },
-                    onApplyBoth = { wallpaperViewModel.applyWallpaper(WallpaperManager.FLAG_LOCK or WallpaperManager.FLAG_SYSTEM) },
                     onSetLiveWallpaper = {
                         try {
                             val intent = Intent(WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER).apply {

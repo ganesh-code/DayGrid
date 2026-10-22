@@ -51,19 +51,20 @@ jobs:
       if: github.ref == 'refs/heads/main'
       uses: softprops/action-gh-release@v2
       with:
-        tag_name: v1.0.1
-        name: "DayGrid v1.0.1 APK"
+        tag_name: v1.0.2
+        name: "DayGrid v1.0.2 APK"
         make_latest: true
         body: |
-          ### 📱 DayGrid Mobile Download (v1.0.1)
+          ### 📱 DayGrid Mobile Download (v1.0.2)
           Download `DayGrid-debug.apk` directly to your phone.
+          - Authentic Nothing OS 2x2 squircle lock screen widget with 3 rows of dots & NDOT dot-matrix font
+          - Dynamic Black & White widget themes adapting automatically to device Light/Dark mode
+          - High-contrast, razor-sharp, clearly visible dots on home and lock screen widgets
+          - Pure Dynamic Live Wallpaper (time & date text removed to prevent overlapping with system lock screen clock)
+          - Static wallpaper generator completely removed from app
           - Bottom navigation bar (Grid, Stats, Wallpaper, Settings)
-          - Onboarding persists after first completion
+          - One-time onboarding persistence
           - Today's date displayed on Home screen
-          - Dynamic Live Wallpaper service with real-time clock & date
-          - Reliable widget rendering with Canvas bitmap
-          - Nothing OS / CMF lock screen Screen Time widget
-          - Optimized for CMF Phone 2 Pro & Nothing OS
         files: |
           app/build/outputs/apk/debug/app-debug.apk
       env:

@@ -135,44 +135,15 @@ class DayGridLiveWallpaperService : WallpaperService() {
             val width = canvas.width.toFloat()
             val height = canvas.height.toFloat()
 
-            // Dark background (Nothing / CMF minimal black)
-            canvas.drawColor(Color.parseColor("#080808"))
+            // True OLED black background
+            canvas.drawColor(Color.parseColor("#000000"))
 
             val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-            val now = LocalTime.now()
-            val today = LocalDate.now()
 
-            // --- Top Clock & Date ---
-            val topY = height * 0.13f
-
-            // Clock (e.g. "14:25")
-            paint.textAlign = Paint.Align.LEFT
-            paint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD)
-            paint.textSize = width * 0.16f
-            paint.color = Color.parseColor("#F5F5F5")
-            val timeStr = now.format(DateTimeFormatter.ofPattern("HH:mm"))
-            canvas.drawText(timeStr, width * 0.08f, topY, paint)
-
-            // Date (e.g. THU, 22 OCT 2026)
-            paint.textSize = width * 0.038f
-            paint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL)
-            paint.color = accentColorInt
-            val dayName = today.dayOfWeek.getDisplayName(java.time.format.TextStyle.SHORT, Locale.getDefault()).uppercase()
-            val monthName = today.month.getDisplayName(java.time.format.TextStyle.SHORT, Locale.getDefault()).uppercase()
-            val dateStr = "$dayName, ${today.dayOfMonth} $monthName ${today.year}"
-            canvas.drawText(dateStr, width * 0.08f, topY + width * 0.06f, paint)
-
-            // Day Progress subtext
-            paint.color = Color.parseColor("#8E8E8E")
-            paint.textSize = width * 0.032f
-            val stats = cachedStats
-            val prodStr = if (stats != null) " · ${stats.productiveDays} PROD (${stats.formattedPercentage})" else ""
-            val totalDays = if (today.isLeapYear) 366 else 365
-            canvas.drawText("DAY ${today.dayOfYear} OF $totalDays$prodStr", width * 0.08f, topY + width * 0.11f, paint)
-
-            // --- Grid Area ---
-            val gridAreaTop = topY + width * 0.17f
-            val gridAreaBottom = height * 0.86f
+            // --- Centered Pure Year Grid (No time, no date, no text headers) ---
+            // Centered vertically in middle 60% of the screen
+            val gridAreaTop = height * 0.22f
+            val gridAreaBottom = height * 0.78f
             val gridAreaHeight = gridAreaBottom - gridAreaTop
             val gridAreaLeft = width * 0.06f
             val gridAreaRight = width * 0.94f
@@ -183,7 +154,7 @@ class DayGridLiveWallpaperService : WallpaperService() {
             if (cells.isNotEmpty()) {
                 val rows = (cells.size + columns - 1) / columns
                 val cellSize = minOf(gridAreaWidth / columns, gridAreaHeight / rows)
-                val gap = cellSize * 0.20f
+                val gap = cellSize * 0.22f
                 val dotRadius = (cellSize - gap) / 2f
 
                 val totalGridWidth = columns * cellSize
@@ -204,19 +175,19 @@ class DayGridLiveWallpaperService : WallpaperService() {
                             canvas.drawCircle(cx, cy, dotRadius, paint)
                         }
                         DayCellDisplayStatus.UNPRODUCTIVE, DayCellDisplayStatus.TODAY_UNPRODUCTIVE -> {
-                            paint.color = Color.parseColor("#222222")
+                            paint.color = Color.parseColor("#262626")
                             canvas.drawCircle(cx, cy, dotRadius, paint)
                         }
                         DayCellDisplayStatus.NEUTRAL, DayCellDisplayStatus.TODAY_NEUTRAL -> {
-                            paint.color = Color.parseColor("#343434")
+                            paint.color = Color.parseColor("#383838")
                             canvas.drawCircle(cx, cy, dotRadius, paint)
                         }
                         DayCellDisplayStatus.TODAY_UNMARKED -> {
-                            paint.color = Color.parseColor("#444444")
+                            paint.color = Color.parseColor("#484848")
                             canvas.drawCircle(cx, cy, dotRadius, paint)
                         }
                         DayCellDisplayStatus.PAST_UNMARKED -> {
-                            paint.color = Color.parseColor("#1A1A1A")
+                            paint.color = Color.parseColor("#1E1E1E")
                             canvas.drawCircle(cx, cy, dotRadius, paint)
                         }
                         DayCellDisplayStatus.FUTURE -> {
@@ -229,17 +200,10 @@ class DayGridLiveWallpaperService : WallpaperService() {
                         paint.style = Paint.Style.STROKE
                         paint.strokeWidth = dotRadius * 0.5f
                         paint.color = Color.WHITE
-                        canvas.drawCircle(cx, cy, dotRadius + gap * 0.4f, paint)
+                        canvas.drawCircle(cx, cy, dotRadius + gap * 0.45f, paint)
                     }
                 }
             }
-
-            // Footer
-            paint.style = Paint.Style.FILL
-            paint.textAlign = Paint.Align.CENTER
-            paint.color = Color.parseColor("#383838")
-            paint.textSize = width * 0.026f
-            canvas.drawText("DAYGRID · DYNAMIC", width / 2f, height * 0.94f, paint)
         }
     }
 }

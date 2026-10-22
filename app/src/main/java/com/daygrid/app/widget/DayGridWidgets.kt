@@ -2,6 +2,7 @@ package com.daygrid.app.widget
 
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.graphics.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
@@ -57,11 +58,13 @@ class DayGridCompactWidget : GlanceAppWidget() {
         val cells = entryPoint.getYearGridUseCase()(year).first()
         val stats = entryPoint.getYearStatsUseCase()(year).first()
 
+        val isNightMode = (context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
         val fastPrefs = context.getSharedPreferences("daygrid_fast_prefs", Context.MODE_PRIVATE)
-        val colorHex = fastPrefs.getString("accent_color", "#FF8A00") ?: "#FF8A00"
-        val accentColorInt = try { android.graphics.Color.parseColor(colorHex) } catch (e: Exception) { android.graphics.Color.parseColor("#FF8A00") }
+        val colorHex = fastPrefs.getString("accent_color", "#D71921") ?: "#D71921"
+        val accentColorInt = try { android.graphics.Color.parseColor(colorHex) } catch (e: Exception) { android.graphics.Color.parseColor("#D71921") }
 
-        val gridBitmap = createGridBitmap(cells, accentColorInt, 400, 240, columns = 20)
+        // Render high contrast, high density grid bitmap (600x400)
+        val gridBitmap = createHighContrastYearGridBitmap(cells, accentColorInt, isNightMode, widthPx = 700, heightPx = 400, columns = 20)
 
         provideContent {
             CompactWidgetContent(
@@ -69,6 +72,7 @@ class DayGridCompactWidget : GlanceAppWidget() {
                 today = today,
                 gridBitmap = gridBitmap,
                 stats = stats,
+                isNightMode = isNightMode,
                 context = context
             )
         }
@@ -94,11 +98,13 @@ class DayGridExpandedWidget : GlanceAppWidget() {
         val cells = entryPoint.getYearGridUseCase()(year).first()
         val stats = entryPoint.getYearStatsUseCase()(year).first()
 
+        val isNightMode = (context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
         val fastPrefs = context.getSharedPreferences("daygrid_fast_prefs", Context.MODE_PRIVATE)
-        val colorHex = fastPrefs.getString("accent_color", "#FF8A00") ?: "#FF8A00"
-        val accentColorInt = try { android.graphics.Color.parseColor(colorHex) } catch (e: Exception) { android.graphics.Color.parseColor("#FF8A00") }
+        val colorHex = fastPrefs.getString("accent_color", "#D71921") ?: "#D71921"
+        val accentColorInt = try { android.graphics.Color.parseColor(colorHex) } catch (e: Exception) { android.graphics.Color.parseColor("#D71921") }
 
-        val gridBitmap = createGridBitmap(cells, accentColorInt, 700, 320, columns = 25)
+        // Render high resolution, high contrast grid bitmap (1000x480)
+        val gridBitmap = createHighContrastYearGridBitmap(cells, accentColorInt, isNightMode, widthPx = 1000, heightPx = 480, columns = 25)
 
         provideContent {
             ExpandedWidgetContent(
@@ -106,6 +112,7 @@ class DayGridExpandedWidget : GlanceAppWidget() {
                 today = today,
                 gridBitmap = gridBitmap,
                 stats = stats,
+                isNightMode = isNightMode,
                 context = context
             )
         }
@@ -117,7 +124,7 @@ class DayGridExpandedWidgetReceiver : GlanceAppWidgetReceiver() {
 }
 
 // ─────────────────────────────────────────
-// Nothing OS / CMF Lock Screen Screen Time Widget
+// Nothing OS / CMF Lock Screen Squircle Widget (2x2)
 // ─────────────────────────────────────────
 class NothingScreenTimeWidget : GlanceAppWidget() {
 
@@ -130,18 +137,23 @@ class NothingScreenTimeWidget : GlanceAppWidget() {
         val year = today.year
         val stats = entryPoint.getYearStatsUseCase()(year).first()
 
+        val isNightMode = (context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
         val fastPrefs = context.getSharedPreferences("daygrid_fast_prefs", Context.MODE_PRIVATE)
         val colorHex = fastPrefs.getString("accent_color", "#D71921") ?: "#D71921"
         val accentColorInt = try { android.graphics.Color.parseColor(colorHex) } catch (e: Exception) { android.graphics.Color.parseColor("#D71921") }
 
-        // Generate Nothing Screen Time style circle bitmap
-        val circleBitmap = createNothingScreenTimeBitmap(today, stats, accentColorInt, sizePx = 200)
+        // Generate authentic Nothing OS 2x2 squircle bitmap with 3 rows of dots + NDOT font text
+        val squircleBitmap = createNothingSquircleBitmap(
+            today = today,
+            stats = stats,
+            accentColor = accentColorInt,
+            isNightMode = isNightMode,
+            sizePx = 500
+        )
 
         provideContent {
             NothingLockWidgetContent(
-                today = today,
-                stats = stats,
-                circleBitmap = circleBitmap,
+                squircleBitmap = squircleBitmap,
                 context = context
             )
         }
@@ -162,16 +174,21 @@ private fun CompactWidgetContent(
     today: LocalDate,
     gridBitmap: Bitmap,
     stats: YearStats,
+    isNightMode: Boolean,
     context: Context
 ) {
     val mainIntent = Intent(context, MainActivity::class.java)
     val dayName = today.dayOfWeek.getDisplayName(java.time.format.TextStyle.SHORT, Locale.getDefault()).uppercase()
     val monthName = today.month.getDisplayName(java.time.format.TextStyle.SHORT, Locale.getDefault()).uppercase()
 
+    val cardBg = if (isNightMode) Color(0xFF161616) else Color(0xFFEEEEEE)
+    val textPrimary = if (isNightMode) Color(0xFFF2F2F2) else Color(0xFF111111)
+    val textSecondary = if (isNightMode) Color(0xFFAAAAAA) else Color(0xFF666666)
+
     Box(
         modifier = GlanceModifier
             .fillMaxSize()
-            .background(ColorProvider(Color(0xFF101010)))
+            .background(ColorProvider(cardBg))
             .clickable(actionStartActivity(mainIntent))
             .padding(10.dp)
     ) {
@@ -186,7 +203,7 @@ private fun CompactWidgetContent(
                 Text(
                     text = "$year · $dayName ${today.dayOfMonth} $monthName",
                     style = TextStyle(
-                        color = ColorProvider(Color(0xFFF0F0F0)),
+                        color = ColorProvider(textPrimary),
                         fontSize = 12.sp,
                         fontWeight = androidx.glance.text.FontWeight.Bold
                     )
@@ -195,8 +212,9 @@ private fun CompactWidgetContent(
                 Text(
                     text = "${stats.productiveDays}d",
                     style = TextStyle(
-                        color = ColorProvider(Color(0xFFAAAAAA)),
-                        fontSize = 11.sp
+                        color = ColorProvider(textSecondary),
+                        fontSize = 11.sp,
+                        fontWeight = androidx.glance.text.FontWeight.Medium
                     )
                 )
             }
@@ -218,6 +236,7 @@ private fun ExpandedWidgetContent(
     today: LocalDate,
     gridBitmap: Bitmap,
     stats: YearStats,
+    isNightMode: Boolean,
     context: Context
 ) {
     val mainIntent = Intent(context, MainActivity::class.java)
@@ -225,10 +244,14 @@ private fun ExpandedWidgetContent(
     val monthName = today.month.getDisplayName(java.time.format.TextStyle.SHORT, Locale.getDefault()).uppercase()
     val totalDays = if (today.isLeapYear) 366 else 365
 
+    val cardBg = if (isNightMode) Color(0xFF141414) else Color(0xFFEFEFEF)
+    val textPrimary = if (isNightMode) Color(0xFFFFFFFF) else Color(0xFF111111)
+    val textSecondary = if (isNightMode) Color(0xFF888888) else Color(0xFF555555)
+
     Box(
         modifier = GlanceModifier
             .fillMaxSize()
-            .background(ColorProvider(Color(0xFF0E0E0E)))
+            .background(ColorProvider(cardBg))
             .clickable(actionStartActivity(mainIntent))
             .padding(12.dp)
     ) {
@@ -244,7 +267,7 @@ private fun ExpandedWidgetContent(
                     Text(
                         text = "$dayName, ${today.dayOfMonth} $monthName $year",
                         style = TextStyle(
-                            color = ColorProvider(Color(0xFFFFFFFF)),
+                            color = ColorProvider(textPrimary),
                             fontSize = 14.sp,
                             fontWeight = androidx.glance.text.FontWeight.Bold
                         )
@@ -252,8 +275,9 @@ private fun ExpandedWidgetContent(
                     Text(
                         text = "DAY ${today.dayOfYear} OF $totalDays",
                         style = TextStyle(
-                            color = ColorProvider(Color(0xFF888888)),
-                            fontSize = 11.sp
+                            color = ColorProvider(textSecondary),
+                            fontSize = 11.sp,
+                            fontWeight = androidx.glance.text.FontWeight.Medium
                         )
                     )
                 }
@@ -263,9 +287,9 @@ private fun ExpandedWidgetContent(
                 Text(
                     text = "${stats.productiveDays} prod · ${stats.formattedPercentage}",
                     style = TextStyle(
-                        color = ColorProvider(Color(0xFFCCCCCC)),
+                        color = ColorProvider(textPrimary),
                         fontSize = 12.sp,
-                        fontWeight = androidx.glance.text.FontWeight.Medium
+                        fontWeight = androidx.glance.text.FontWeight.Bold
                     )
                 )
             }
@@ -283,64 +307,329 @@ private fun ExpandedWidgetContent(
 
 @Composable
 private fun NothingLockWidgetContent(
-    today: LocalDate,
-    stats: YearStats,
-    circleBitmap: Bitmap,
+    squircleBitmap: Bitmap,
     context: Context
 ) {
     val mainIntent = Intent(context, MainActivity::class.java)
-    val totalDays = if (today.isLeapYear) 366 else 365
 
     Box(
         modifier = GlanceModifier
             .fillMaxSize()
-            .background(ColorProvider(Color(0xCC000000)))
-            .clickable(actionStartActivity(mainIntent))
-            .padding(4.dp),
+            .clickable(actionStartActivity(mainIntent)),
         contentAlignment = Alignment.Center
     ) {
-        Row(
-            verticalAlignment = Alignment.Vertical.CenterVertically,
-            horizontalAlignment = Alignment.Horizontal.CenterHorizontally
-        ) {
-            Image(
-                provider = ImageProvider(circleBitmap),
-                contentDescription = "Nothing Screen Time Grid Widget",
-                modifier = GlanceModifier.size(48.dp)
-            )
+        Image(
+            provider = ImageProvider(squircleBitmap),
+            contentDescription = "Nothing DayGrid Lock Screen Widget",
+            modifier = GlanceModifier.fillMaxSize()
+        )
+    }
+}
 
-            Spacer(GlanceModifier.width(6.dp))
+// ─────────────────────────────────────────
+// Nothing OS Dot-Matrix Typography Engine
+// ─────────────────────────────────────────
 
-            Column(
-                verticalAlignment = Alignment.Vertical.CenterVertically
-            ) {
-                Text(
-                    text = "DAY ${today.dayOfYear}/$totalDays",
-                    style = TextStyle(
-                        color = ColorProvider(Color(0xFFF2F2F2)),
-                        fontSize = 11.sp,
-                        fontWeight = androidx.glance.text.FontWeight.Bold
-                    )
-                )
-                Text(
-                    text = "${stats.productiveDays} PROD · ${stats.formattedPercentage}",
-                    style = TextStyle(
-                        color = ColorProvider(Color(0xFFA0A0A0)),
-                        fontSize = 9.sp
-                    )
-                )
+object NothingDotMatrix {
+    val GLYPHS: Map<Char, List<String>> = mapOf(
+        '0' to listOf(
+            ".###.",
+            "#...#",
+            "#..##",
+            "#. #.#",
+            "##..#",
+            "#...#",
+            ".###."
+        ),
+        '1' to listOf(
+            "..#..",
+            ".##..",
+            "..#..",
+            "..#..",
+            "..#..",
+            "..#..",
+            ".###."
+        ),
+        '2' to listOf(
+            ".###.",
+            "#...#",
+            "....#",
+            "..##.",
+            ".#...",
+            "#....",
+            "#####"
+        ),
+        '3' to listOf(
+            ".###.",
+            "#...#",
+            "....#",
+            "..##.",
+            "....#",
+            "#...#",
+            ".###."
+        ),
+        '4' to listOf(
+            "#...#",
+            "#...#",
+            "#...#",
+            "#####",
+            "....#",
+            "....#",
+            "....#"
+        ),
+        '5' to listOf(
+            "#####",
+            "#....",
+            "####.",
+            "....#",
+            "....#",
+            "#...#",
+            ".###."
+        ),
+        '6' to listOf(
+            ".###.",
+            "#....",
+            "####.",
+            "#...#",
+            "#...#",
+            "#...#",
+            ".###."
+        ),
+        '7' to listOf(
+            "#####",
+            "....#",
+            "...#.",
+            "..#..",
+            ".#...",
+            ".#...",
+            ".#..."
+        ),
+        '8' to listOf(
+            ".###.",
+            "#...#",
+            "#...#",
+            ".###.",
+            "#...#",
+            "#...#",
+            ".###."
+        ),
+        '9' to listOf(
+            ".###.",
+            "#...#",
+            "#...#",
+            ".####",
+            "....#",
+            "....#",
+            ".###."
+        ),
+        'D' to listOf(
+            "####.",
+            "#...#",
+            "#...#",
+            "#...#",
+            "#...#",
+            "#...#",
+            "####."
+        ),
+        'P' to listOf(
+            "####.",
+            "#...#",
+            "#...#",
+            "####.",
+            "#....",
+            "#....",
+            "#...."
+        ),
+        'H' to listOf(
+            "#...#",
+            "#...#",
+            "#...#",
+            "#####",
+            "#...#",
+            "#...#",
+            "#...#"
+        ),
+        'M' to listOf(
+            "#...#",
+            "##.##",
+            "#.#.#",
+            "#...#",
+            "#...#",
+            "#...#",
+            "#...#"
+        ),
+        '%' to listOf(
+            "##..#",
+            "##.#.",
+            "..#..",
+            ".#...",
+            "#..##",
+            "#..##",
+            "....."
+        ),
+        ':' to listOf(
+            ".....",
+            "..#..",
+            ".....",
+            ".....",
+            "..#..",
+            ".....",
+            "....."
+        ),
+        ' ' to listOf(
+            ".....",
+            ".....",
+            ".....",
+            ".....",
+            ".....",
+            ".....",
+            "....."
+        )
+    )
+
+    fun drawText(
+        canvas: Canvas,
+        text: String,
+        startX: Float,
+        startY: Float,
+        dotRadius: Float,
+        dotSpacing: Float,
+        paint: Paint
+    ) {
+        var cursorX = startX
+        val step = dotRadius * 2f + dotSpacing
+
+        for (ch in text.uppercase()) {
+            val glyph = GLYPHS[ch] ?: GLYPHS[' ']!!
+            for (row in 0 until 7) {
+                val line = glyph[row]
+                for (col in 0 until 5) {
+                    if (col < line.length && line[col] == '#') {
+                        val cx = cursorX + col * step + dotRadius
+                        val cy = startY + row * step + dotRadius
+                        canvas.drawCircle(cx, cy, dotRadius, paint)
+                    }
+                }
             }
+            cursorX += 5 * step + step * 1.5f
         }
     }
 }
 
 // ─────────────────────────────────────────
-// High-performance Bitmap Canvas Generators
+// Authentic Nothing OS 2x2 Squircle Lock Screen Widget Bitmap
+// (Exact match to Nothing Screen Time widget in user screenshot)
 // ─────────────────────────────────────────
 
-fun createGridBitmap(
+fun createNothingSquircleBitmap(
+    today: LocalDate,
+    stats: YearStats,
+    accentColor: Int,
+    isNightMode: Boolean,
+    sizePx: Int
+): Bitmap {
+    val bitmap = Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bitmap)
+    val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+
+    // Palette based on device light/dark mode
+    val bgColor = if (isNightMode) android.graphics.Color.parseColor("#181818") else android.graphics.Color.parseColor("#EDEDED")
+    val borderColor = if (isNightMode) android.graphics.Color.parseColor("#2A2A2A") else android.graphics.Color.parseColor("#DFDFDF")
+    val filledDotColor = if (isNightMode) android.graphics.Color.parseColor("#FFFFFF") else android.graphics.Color.parseColor("#111111")
+    val unfilledDotColor = if (isNightMode) android.graphics.Color.parseColor("#343434") else android.graphics.Color.parseColor("#CCCCCC")
+
+    // Draw Squircle background
+    val rect = RectF(0f, 0f, sizePx.toFloat(), sizePx.toFloat())
+    val cornerRadius = sizePx * 0.22f // Nothing OS rounded corner ratio
+    paint.style = Paint.Style.FILL
+    paint.color = bgColor
+    canvas.drawRoundRect(rect, cornerRadius, cornerRadius, paint)
+
+    paint.style = Paint.Style.STROKE
+    paint.strokeWidth = 3f
+    paint.color = borderColor
+    canvas.drawRoundRect(rect, cornerRadius, cornerRadius, paint)
+
+    // ─────────────────────────────────────────
+    // Top Section: 3 rows of 14 dots (42 dots total)
+    // Exactly matches Image 1 & 2 in Nothing Screen Time widget
+    // ─────────────────────────────────────────
+    paint.style = Paint.Style.FILL
+    val topCols = 14
+    val topRows = 3
+    val totalDots = topCols * topRows // 42
+
+    val totalDays = if (today.isLeapYear) 366 else 365
+    val elapsedFraction = today.dayOfYear.toFloat() / totalDays.toFloat()
+    val filledCount = (elapsedFraction * totalDots).toInt().coerceIn(1, totalDots)
+
+    val topMargin = sizePx * 0.12f
+    val sideMargin = sizePx * 0.12f
+    val availableWidth = sizePx - 2 * sideMargin
+    val dotStep = availableWidth / (topCols - 1)
+    val dotRadius = dotStep * 0.38f
+
+    for (index in 0 until totalDots) {
+        val col = index % topCols
+        val row = index / topCols
+        val cx = sideMargin + col * dotStep
+        val cy = topMargin + row * dotStep
+
+        if (index < filledCount) {
+            paint.color = filledDotColor
+        } else {
+            paint.color = unfilledDotColor
+        }
+        canvas.drawCircle(cx, cy, dotRadius, paint)
+    }
+
+    // ─────────────────────────────────────────
+    // Bottom Section: Nothing Dot-Matrix Font (NDOT)
+    // Matches "2H 32M" style in Image 2
+    // ─────────────────────────────────────────
+    val displayText = "${today.dayOfYear}D"
+    val textStartX = sideMargin
+    val textStartY = sizePx * 0.70f
+    val textDotRadius = sizePx * 0.013f
+    val textDotSpacing = sizePx * 0.007f
+
+    paint.color = filledDotColor
+    NothingDotMatrix.drawText(
+        canvas = canvas,
+        text = displayText,
+        startX = textStartX,
+        startY = textStartY,
+        dotRadius = textDotRadius,
+        dotSpacing = textDotSpacing,
+        paint = paint
+    )
+
+    // Secondary dot matrix text on right side: e.g. "PROD" or percentage
+    val subText = "${stats.productiveDays}P"
+    val subStartX = sizePx * 0.62f
+    paint.color = if (isNightMode) android.graphics.Color.parseColor("#888888") else android.graphics.Color.parseColor("#666666")
+    NothingDotMatrix.drawText(
+        canvas = canvas,
+        text = subText,
+        startX = subStartX,
+        startY = textStartY + sizePx * 0.02f,
+        dotRadius = textDotRadius * 0.85f,
+        dotSpacing = textDotSpacing * 0.85f,
+        paint = paint
+    )
+
+    return bitmap
+}
+
+// ─────────────────────────────────────────
+// High Contrast Year Grid Canvas Generator
+// (For Home Screen Expanded & Compact Widgets)
+// ─────────────────────────────────────────
+
+fun createHighContrastYearGridBitmap(
     cells: List<DayCell>,
     accentColor: Int,
+    isNightMode: Boolean,
     widthPx: Int,
     heightPx: Int,
     columns: Int = 25
@@ -353,13 +642,19 @@ fun createGridBitmap(
 
     val rows = (cells.size + columns - 1) / columns
     val cellSize = minOf(widthPx.toFloat() / columns, heightPx.toFloat() / rows)
-    val gap = cellSize * 0.22f
+    val gap = cellSize * 0.20f
     val dotRadius = (cellSize - gap) / 2f
 
     val totalW = columns * cellSize
     val totalH = rows * cellSize
     val startX = (widthPx - totalW) / 2f
     val startY = (heightPx - totalH) / 2f
+
+    // Contrast colors based on mode
+    val pastUnmarkedColor = if (isNightMode) android.graphics.Color.parseColor("#484848") else android.graphics.Color.parseColor("#AFAFAF")
+    val futureColor = if (isNightMode) android.graphics.Color.parseColor("#242424") else android.graphics.Color.parseColor("#D4D4D4")
+    val unproductiveColor = if (isNightMode) android.graphics.Color.parseColor("#2E2E2E") else android.graphics.Color.parseColor("#BEBEBE")
+    val neutralColor = if (isNightMode) android.graphics.Color.parseColor("#3C3C3C") else android.graphics.Color.parseColor("#CBCBCB")
 
     cells.forEachIndexed { index, cell ->
         val col = index % columns
@@ -370,71 +665,21 @@ fun createGridBitmap(
         paint.style = Paint.Style.FILL
         paint.color = when (cell.displayStatus) {
             DayCellDisplayStatus.PRODUCTIVE, DayCellDisplayStatus.TODAY_PRODUCTIVE -> accentColor
-            DayCellDisplayStatus.UNPRODUCTIVE, DayCellDisplayStatus.TODAY_UNPRODUCTIVE -> android.graphics.Color.parseColor("#262626")
-            DayCellDisplayStatus.NEUTRAL, DayCellDisplayStatus.TODAY_NEUTRAL -> android.graphics.Color.parseColor("#383838")
-            DayCellDisplayStatus.TODAY_UNMARKED -> android.graphics.Color.parseColor("#555555")
-            DayCellDisplayStatus.PAST_UNMARKED -> android.graphics.Color.parseColor("#1C1C1C")
-            DayCellDisplayStatus.FUTURE -> android.graphics.Color.parseColor("#121212")
+            DayCellDisplayStatus.UNPRODUCTIVE, DayCellDisplayStatus.TODAY_UNPRODUCTIVE -> unproductiveColor
+            DayCellDisplayStatus.NEUTRAL, DayCellDisplayStatus.TODAY_NEUTRAL -> neutralColor
+            DayCellDisplayStatus.TODAY_UNMARKED -> pastUnmarkedColor
+            DayCellDisplayStatus.PAST_UNMARKED -> pastUnmarkedColor
+            DayCellDisplayStatus.FUTURE -> futureColor
         }
         canvas.drawCircle(cx, cy, dotRadius, paint)
 
         if (cell.isToday) {
             paint.style = Paint.Style.STROKE
-            paint.strokeWidth = 2.5f
-            paint.color = android.graphics.Color.WHITE
-            canvas.drawCircle(cx, cy, dotRadius + 1.5f, paint)
+            paint.strokeWidth = 3f
+            paint.color = if (isNightMode) android.graphics.Color.WHITE else android.graphics.Color.BLACK
+            canvas.drawCircle(cx, cy, dotRadius + gap * 0.45f, paint)
         }
     }
-
-    return bitmap
-}
-
-fun createNothingScreenTimeBitmap(
-    today: LocalDate,
-    stats: YearStats,
-    accentColor: Int,
-    sizePx: Int
-): Bitmap {
-    val bitmap = Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.ARGB_8888)
-    val canvas = Canvas(bitmap)
-    val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-
-    val cx = sizePx / 2f
-    val cy = sizePx / 2f
-    val strokeW = sizePx * 0.10f
-    val radius = (sizePx - strokeW) / 2f
-
-    // Background track ring
-    paint.style = Paint.Style.STROKE
-    paint.strokeWidth = strokeW
-    paint.color = android.graphics.Color.parseColor("#252525")
-    canvas.drawCircle(cx, cy, radius, paint)
-
-    // Progress arc
-    val totalDays = if (today.isLeapYear) 366 else 365
-    val sweepAngle = 360f * (today.dayOfYear.toFloat() / totalDays.toFloat())
-    paint.color = accentColor
-    paint.strokeCap = Paint.Cap.ROUND
-    val rect = RectF(cx - radius, cy - radius, cx + radius, cy + radius)
-    canvas.drawArc(rect, -90f, sweepAngle, false, paint)
-
-    // Center number (day of year or productive days)
-    paint.style = Paint.Style.FILL
-    paint.textAlign = Paint.Align.CENTER
-    paint.color = android.graphics.Color.parseColor("#FFFFFF")
-    paint.textSize = sizePx * 0.32f
-    paint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD)
-    val numText = "${today.dayOfYear}"
-    canvas.drawText(numText, cx, cy + sizePx * 0.08f, paint)
-
-    // Subtext "DAY"
-    paint.textSize = sizePx * 0.13f
-    paint.color = android.graphics.Color.parseColor("#888888")
-    canvas.drawText("DAY", cx, cy + sizePx * 0.24f, paint)
-
-    // Signature Nothing Red dot at 12 o'clock
-    paint.color = android.graphics.Color.parseColor("#D71921")
-    canvas.drawCircle(cx, strokeW / 2f, strokeW * 0.35f, paint)
 
     return bitmap
 }

@@ -1,11 +1,11 @@
 package com.daygrid.app.ui.screens
 
-import android.graphics.Bitmap
-import androidx.compose.foundation.Image
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -15,25 +15,21 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.daygrid.app.domain.model.DayCell
+import com.daygrid.app.domain.model.DayCellDisplayStatus
 import com.daygrid.app.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WallpaperScreen(
-    previewBitmap: Bitmap?,
-    isGenerating: Boolean,
-    isApplying: Boolean,
+    cells: List<DayCell>,
     accentColor: Color = DayGridOrange,
-    onGenerate: () -> Unit,
-    onApplyLock: () -> Unit,
-    onApplyHome: () -> Unit,
-    onApplyBoth: () -> Unit,
     onSetLiveWallpaper: () -> Unit,
     onBack: (() -> Unit)? = null
 ) {
@@ -42,7 +38,7 @@ fun WallpaperScreen(
         topBar = {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = DayGridBackground),
-                title = { Text("Wallpapers", color = DayGridTextPrimary, fontWeight = FontWeight.SemiBold) },
+                title = { Text("Live Wallpaper", color = DayGridTextPrimary, fontWeight = FontWeight.SemiBold) },
                 navigationIcon = {
                     if (onBack != null) {
                         IconButton(onClick = onBack) {
@@ -64,21 +60,103 @@ fun WallpaperScreen(
             Spacer(Modifier.height(8.dp))
 
             // ─────────────────────────────────────────
-            // Dynamic Live Wallpaper Card
+            // Live Wallpaper Phone Mockup Preview
+            // ─────────────────────────────────────────
+            Surface(
+                modifier = Modifier
+                    .width(220.dp)
+                    .height(380.dp)
+                    .border(2.dp, Color(0xFF282828), RoundedCornerShape(32.dp)),
+                shape = RoundedCornerShape(32.dp),
+                color = Color.Black
+            ) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    // Render miniature Year Grid preview exactly as on lockscreen
+                    Canvas(
+                        modifier = Modifier
+                            .fillMaxWidth(0.85f)
+                            .height(200.dp)
+                    ) {
+                        if (cells.isNotEmpty()) {
+                            val columns = 25
+                            val rows = (cells.size + columns - 1) / columns
+                            val cellSize = minOf(size.width / columns, size.height / rows)
+                            val gap = cellSize * 0.22f
+                            val dotRadius = (cellSize - gap) / 2f
+
+                            val totalGridWidth = columns * cellSize
+                            val totalGridHeight = rows * cellSize
+                            val startX = (size.width - totalGridWidth) / 2f
+                            val startY = (size.height - totalGridHeight) / 2f
+
+                            cells.forEachIndexed { index, cell ->
+                                val col = index % columns
+                                val row = index / columns
+                                val cx = startX + col * cellSize + cellSize / 2f
+                                val cy = startY + row * cellSize + cellSize / 2f
+
+                                val color = when (cell.displayStatus) {
+                                    DayCellDisplayStatus.PRODUCTIVE, DayCellDisplayStatus.TODAY_PRODUCTIVE -> accentColor
+                                    DayCellDisplayStatus.UNPRODUCTIVE, DayCellDisplayStatus.TODAY_UNPRODUCTIVE -> Color(0xFF262626)
+                                    DayCellDisplayStatus.NEUTRAL, DayCellDisplayStatus.TODAY_NEUTRAL -> Color(0xFF383838)
+                                    DayCellDisplayStatus.TODAY_UNMARKED -> Color(0xFF484848)
+                                    DayCellDisplayStatus.PAST_UNMARKED -> Color(0xFF1E1E1E)
+                                    DayCellDisplayStatus.FUTURE -> Color(0xFF121212)
+                                }
+
+                                drawCircle(
+                                    color = color,
+                                    radius = dotRadius,
+                                    center = Offset(cx, cy)
+                                )
+
+                                if (cell.isToday) {
+                                    drawCircle(
+                                        color = Color.White,
+                                        radius = dotRadius + gap * 0.45f,
+                                        center = Offset(cx, cy),
+                                        style = Stroke(width = 1.2f)
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    // Top indicator showing it adapts to lockscreen
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(top = 16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Surface(
+                            color = Color(0xFF222222),
+                            shape = CircleShape,
+                            modifier = Modifier.size(8.dp)
+                        ) {}
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(24.dp))
+
+            // ─────────────────────────────────────────
+            // Live Wallpaper Description Card
             // ─────────────────────────────────────────
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(1.dp, Color(0xFF282828), RoundedCornerShape(16.dp)),
+                    .border(1.dp, Color(0xFF242424), RoundedCornerShape(16.dp)),
                 color = DayGridSurface,
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Column(
                     modifier = Modifier.padding(18.dp)
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
                         Surface(
                             shape = RoundedCornerShape(8.dp),
                             color = accentColor.copy(alpha = 0.15f),
@@ -102,7 +180,7 @@ fun WallpaperScreen(
                                 fontSize = 16.sp
                             )
                             Text(
-                                text = "Auto-updating clock, date & year grid",
+                                text = "Pure 365-day grid for Nothing OS & Android",
                                 color = DayGridTextSecondary,
                                 fontSize = 12.sp
                             )
@@ -111,162 +189,38 @@ fun WallpaperScreen(
 
                     Spacer(Modifier.height(14.dp))
                     Text(
-                        text = "Runs continuously as your Android live wallpaper. The clock ticks in real time, date updates at midnight, and your year grid is always live on your home & lock screen.",
+                        text = "Clean, distraction-free Year Grid. Designed specifically for Nothing OS and Android lock screens — no duplicate clock or date text. Pure OLED black background saves battery.",
                         color = Color(0xFFAAAAAA),
                         fontSize = 13.sp,
                         lineHeight = 18.sp
                     )
-
-                    Spacer(Modifier.height(16.dp))
-                    Button(
-                        onClick = onSetLiveWallpaper,
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(containerColor = accentColor)
-                    ) {
-                        Icon(Icons.Default.Wallpaper, contentDescription = null, tint = DayGridBackground)
-                        Spacer(Modifier.width(8.dp))
-                        Text(
-                            "Set as Live Wallpaper",
-                            color = DayGridBackground,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
                 }
             }
 
-            Spacer(Modifier.height(28.dp))
+            Spacer(Modifier.height(24.dp))
 
             // ─────────────────────────────────────────
-            // Static Wallpaper Generator
+            // Apply Live Wallpaper Action Button
             // ─────────────────────────────────────────
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+            Button(
+                onClick = onSetLiveWallpaper,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp),
+                shape = RoundedCornerShape(14.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = accentColor)
             ) {
+                Icon(Icons.Default.Wallpaper, contentDescription = null, tint = DayGridBackground)
+                Spacer(Modifier.width(10.dp))
                 Text(
-                    text = "Static Image Wallpaper",
-                    color = DayGridTextPrimary,
+                    "Set Dynamic Live Wallpaper",
+                    color = DayGridBackground,
                     fontWeight = FontWeight.Bold,
                     fontSize = 15.sp
                 )
-                Spacer(Modifier.weight(1f))
-                Text(
-                    text = "With Date & Clock",
-                    color = accentColor,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Medium
-                )
             }
 
-            Spacer(Modifier.height(12.dp))
-
-            // Preview area
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(340.dp)
-                    .clip(RoundedCornerShape(18.dp))
-                    .background(DayGridSurface),
-                contentAlignment = Alignment.Center
-            ) {
-                when {
-                    isGenerating -> {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            CircularProgressIndicator(color = accentColor)
-                            Spacer(Modifier.height(8.dp))
-                            Text("Generating wallpaper...", color = DayGridTextSecondary, fontSize = 13.sp)
-                        }
-                    }
-                    previewBitmap != null -> {
-                        Image(
-                            bitmap = previewBitmap.asImageBitmap(),
-                            contentDescription = "Wallpaper preview",
-                            modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(18.dp)),
-                            contentScale = ContentScale.Fit
-                        )
-                    }
-                    else -> {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Icon(
-                                Icons.Default.Image,
-                                contentDescription = null,
-                                tint = DayGridTextTertiary,
-                                modifier = Modifier.size(44.dp)
-                            )
-                            Text(
-                                "Generate a high-res image with date & clock",
-                                color = DayGridTextSecondary,
-                                fontSize = 13.sp
-                            )
-                        }
-                    }
-                }
-            }
-
-            Spacer(Modifier.height(16.dp))
-
-            // Generate button
-            Button(
-                onClick = onGenerate,
-                enabled = !isGenerating && !isApplying,
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = DayGridSurface, contentColor = DayGridTextPrimary)
-            ) {
-                Icon(Icons.Default.Refresh, contentDescription = null, tint = accentColor)
-                Spacer(Modifier.width(8.dp))
-                Text(
-                    if (previewBitmap == null) "Generate Static Image" else "Regenerate Image",
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
-
-            if (previewBitmap != null) {
-                Spacer(Modifier.height(16.dp))
-                Text("Apply Static Image to:", fontSize = 13.sp, color = DayGridTextSecondary)
-                Spacer(Modifier.height(8.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    OutlinedButton(
-                        onClick = onApplyLock,
-                        modifier = Modifier.weight(1f),
-                        enabled = !isApplying,
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = DayGridTextSecondary)
-                    ) {
-                        Text("Lock screen", fontSize = 12.sp)
-                    }
-                    OutlinedButton(
-                        onClick = onApplyHome,
-                        modifier = Modifier.weight(1f),
-                        enabled = !isApplying,
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = DayGridTextSecondary)
-                    ) {
-                        Text("Home screen", fontSize = 12.sp)
-                    }
-                }
-
-                Spacer(Modifier.height(8.dp))
-
-                Button(
-                    onClick = onApplyBoth,
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = !isApplying,
-                    colors = ButtonDefaults.buttonColors(containerColor = accentColor, contentColor = DayGridBackground)
-                ) {
-                    if (isApplying) {
-                        CircularProgressIndicator(modifier = Modifier.size(16.dp), color = DayGridBackground, strokeWidth = 2.dp)
-                    } else {
-                        Text("Apply to both screens", fontWeight = FontWeight.Bold)
-                    }
-                }
-            }
-
-            Spacer(Modifier.height(90.dp)) // Clearance for bottom navbar
+            Spacer(Modifier.height(100.dp)) // Bottom navbar clearance
         }
     }
 }
